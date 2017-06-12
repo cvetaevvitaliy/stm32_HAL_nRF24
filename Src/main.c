@@ -189,7 +189,7 @@ void RX_Mode(void)
 {
 	CE(0);
   	SPI_Write_Buf(WRITE_REG_NRF24L01 + RX_ADDR_P0, TX_ADDRESS, TX_ADR_WIDTH);  // address 5 byte is {0xb2,0xb2,0xb3,0xb4,0x01} to pipe 0
-  	SPI_RW_Reg(WRITE_REG_NRF24L01 + RX_PW_P0, TX_PLOAD_WIDTH);  // 接收通道0选择和发送通道相同有效数据宽度
+  	SPI_RW_Reg(WRITE_REG_NRF24L01 + RX_PW_P0, TX_PLOAD_WIDTH);  // 
 
   	SPI_RW_Reg(WRITE_REG_NRF24L01 + EN_AA, 0x00);//0x00);//0x3f);               // enable ask
   	SPI_RW_Reg(WRITE_REG_NRF24L01 + EN_RXADDR, 0x3f);           // set address rx
@@ -248,17 +248,17 @@ void NRF24L01_Send(void)
 	CE(0);
 	HAL_Delay(2);//delayMicroseconds(10);//delay1us(10);
 
-	status=SPI_Read_Reg(STATUS);	// 读取状态寄存其来判断数据接收状况
+	status=SPI_Read_Reg(STATUS);	 
 	if(status&TX_DS)	/*tx_ds == 0x20*/
 	{
 		Printf("data sended f\r\n");
-		SPI_RW_Reg(WRITE_REG_NRF24L01 + STATUS, 0x20);      // 清除TX，让IRQ拉低；
+		SPI_RW_Reg(WRITE_REG_NRF24L01 + STATUS, 0x20);     
 
 	}
 	else if(status&MAX_RT)
 	{
 		Printf("NO SEND.. f\n\r");
-		SPI_RW_Reg(WRITE_REG_NRF24L01 + STATUS, 0x10);      // 清除TX，让IRQ拉低；
+		SPI_RW_Reg(WRITE_REG_NRF24L01 + STATUS, 0x10);  
 	}
 
 	CE(1);
