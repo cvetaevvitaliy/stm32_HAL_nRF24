@@ -220,12 +220,12 @@ void NRF24L01_Receive(void)
 
 		SPI_RW_Reg(WRITE_REG_NRF24L01 + STATUS, 0x40);
 	}
-	else if(status&TX_DS)
+	if(status&TX_DS)
 	{
 		Printf("data sended INRX\r\n");
 		SPI_RW_Reg(WRITE_REG_NRF24L01 + STATUS, 0x20);
 	}
-	else if(status&MAX_RT)
+	if(status&MAX_RT)
 	{
 	Printf("NO SEND..INRX\n\r");
 		SPI_RW_Reg(WRITE_REG_NRF24L01 + STATUS, 0x10);
