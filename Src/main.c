@@ -68,6 +68,13 @@ volatile int timer_ms;
 /* USER CODE BEGIN 0 */
 
 
+void     HAL_SYSTICK_Callback(void)
+{
+	timer_ms++;
+}
+
+
+
 
 #include <stdarg.h>
 
@@ -107,18 +114,13 @@ unsigned char TX_BUF[TX_PLOAD_WIDTH];
 
 unsigned char SPI_Receive_byte(unsigned char reg)
 {
-   //wiringPiSPIDataRW(CHANNEL, &reg, 1);
-	//HAL_SPI_Receive(&hspi1, &reg, 1, 100);
-
 	HAL_SPI_TransmitReceive(&hspi1, &reg, &reg, 1, 100);
    return reg;
 }
 
 unsigned char SPI_Send_byte(unsigned char reg)
 {
-   //wiringPiSPIDataRW(CHANNEL, &reg, 1);
 	HAL_SPI_Transmit(&hspi1, &reg, 1, 100);
-	//HAL_SPI_TransmitReceive(&hspi1, &reg, &reg, 1, 100);
    return reg;
 }
 
@@ -140,10 +142,7 @@ unsigned char SPI_Read_Buf(unsigned char reg, unsigned char *pBuf, unsigned char
 	CSN(0);
 	status=SPI_Receive_byte(reg);
 	unsigned char * bufer[32];
-	//wiringPiSPIDataRW(CHANNEL, pBuf, bytes);
 	HAL_SPI_TransmitReceive(&hspi1, bufer, pBuf, bytes, 100);
-
-	//for(byte_ctr=0;byte_ctr<bytes;byte_ctr++)		pBuf[byte_ctr]=SPI_Receive_byte(0);
 	CSN(1);
 	return(status);
 }
@@ -206,47 +205,31 @@ void NRF24L01_Receive(void)
 {
     unsigned char status=0x01;
 
-	//Initial_SPI(SPI1);printf("p1");
-	//	RX_Mode();
-	//while(IRQ);
 	CE(0);
 	HAL_Delay(2);//delayMicroseconds(10);//delay1us(10);
 
 	status=SPI_Read_Reg(STATUS);
-	//Printf("STATUS is: 0x%x\r\n",status);
-	//if(status & 0x40) {printf("RX s:0x%x\n\r", status);SPI_RW_Reg(WRITE_REG_NRF24L01 + STATUS, 0x40);}
+
 	if(status & 0x40)
 	{
-
-//		CE(1);
 		SPI_Read_Buf(RD_RX_PLOAD,RX_BUF,TX_PLOAD_WIDTH);// read receive payload from RX_FIFO buffer
 
-		//printf(" zerro data is: 0x%x\r\n",RX_BUF[0]);
 		Printf("RX --");
 		Printf("data zerro is: 0x%x\r\n",RX_BUF[0]);
 		//int t=0; for (t=0; t<32; t++)printf("0x%x,",RX_BUF[t]); printf("\r\n");
 
-//		for(i=0;i<32;i++)
-//		{
-//			RX_BUF[1] = 0X06;
-//			printf("\r\n i=%d,½ÓÊÕµ½Êý¾Ý£º%x\r\n",i,RX_BUF[i]);
-//		}
 		SPI_RW_Reg(WRITE_REG_NRF24L01 + STATUS, 0x40);
 	}
-	else if(status&TX_DS)	/*tx_ds == 0x20*/
+	else if(status&TX_DS)
 	{
-		//printf("STATUS½ XZ1 0x%x\r\n",status);
-		//printf("\r\n· XZ2 %s\r\n",RX_BUF);
 		Printf("data sended INRX\r\n");
-		SPI_RW_Reg(WRITE_REG_NRF24L01 + STATUS, 0x20);      // Çå³ýTX£¬ÈÃIRQÀ­µÍ£»
-
+		SPI_RW_Reg(WRITE_REG_NRF24L01 + STATUS, 0x20);
 	}
 	else if(status&MAX_RT)
 	{
 	Printf("NO SEND..INRX\n\r");
-		SPI_RW_Reg(WRITE_REG_NRF24L01 + STATUS, 0x10);      // Çå³ýTX£¬ÈÃIRQÀ­µÍ£»
+		SPI_RW_Reg(WRITE_REG_NRF24L01 + STATUS, 0x10);
 	}
-
 
 	CE(1);
 
@@ -255,8 +238,6 @@ void NRF24L01_Receive(void)
 void NRF24L01_Send(void)
 {
     unsigned char status=0x00;
-
-//	CSN(0);
 
 	unsigned char bbuuff[32] = {0x33,0x12,0x31,0x54,0x25,0x16,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32};
 
@@ -270,8 +251,6 @@ void NRF24L01_Send(void)
 	status=SPI_Read_Reg(STATUS);	// ¶ÁÈ¡×´Ì¬¼Ä´æÆäÀ´ÅÐ¶ÏÊý¾Ý½ÓÊÕ×´¿ö
 	if(status&TX_DS)	/*tx_ds == 0x20*/
 	{
-		//printf("STATUS½ XZ1 0x%x\r\n",status);
-		//printf("\r\n· XZ2 %s\r\n",RX_BUF);
 		Printf("data sended f\r\n");
 		SPI_RW_Reg(WRITE_REG_NRF24L01 + STATUS, 0x20);      // Çå³ýTX£¬ÈÃIRQÀ­µÍ£»
 
@@ -318,32 +297,7 @@ int main(void)
 
   Printf("Started..\n\r");
 
-  //__HAL_UART_ENABLE_IT(&huart1, UART_IT_TXE);
-  __HAL_UART_ENABLE_IT(&huart1, UART_IT_RXNE);
 
-  unsigned char * terr1 = "11112345678901234567890123456789012345678901234567890\n\r";
-  unsigned char * terr2 = "22212345678901234567890123456789012345678901234567890\n\r";
-  unsigned char * terr3 = "33312345678901234567890123456789012345678901234567890\n\r";
-
-  while(0){
-	  //Printf("1\n\r");
-	  while(HAL_UART_Transmit_DMA(&huart1, "11\n\r", 4) != HAL_OK){};
-  while(HAL_UART_Transmit_DMA(&huart1, "1114567890\n\r", 12) != HAL_OK){};
-  //Printf("2\n\r");
-  while(HAL_UART_Transmit_DMA(&huart1, "2224567890\n\r", 12) != HAL_OK){};
-  //Printf("3\n\r");
-  while(HAL_UART_Transmit_DMA(&huart1, "3334567890\n\r", 12) != HAL_OK){};
-  //Printf("4\n\r");
-
-
-  HAL_Delay(1000);
-
-  }
-  ///init GPIO
-  //pinMode(0, OUTPUT);	//CSN
-  //pinMode(1, OUTPUT);	//CE
-  //pinMode(2, INPUT);	//IRQ
-  //pullUpDnControl(2, PUD_UP);	//IRQ Pull Up
 
   CSN(GPIO_PIN_RESET);
   CE(GPIO_PIN_SET);
@@ -351,8 +305,6 @@ int main(void)
 
 
   RX_Mode();
-  //HAL_Delay(10);
-  //SPI_RW_Reg(WRITE_REG_NRF24L01 + STATUS, 0xFF);      // Çå³ýTX£¬ÈÃIRQÀ­µÍ£»
 
   /* USER CODE END 2 */
 
@@ -361,22 +313,18 @@ int main(void)
   while (1)
   {
 
-
-	  //if (!IRQ)
 	  if (IRQ == GPIO_PIN_RESET)
 		  {
-
-		  //Printf("RX!\n\r");
-		  NRF24L01_Receive();
-		  RX_Mode();
-			//unsigned char status=SPI_Read_Reg(STATUS);
-			//printf("STATUS is: 0x%x\r\n",status);
-			//SPI_RW_Reg(WRITE_REG_NRF24L01 + STATUS, 0xFF);      // Çå³ýTX£¬ÈÃIRQÀ­µÍ£»
+		  	  NRF24L01_Receive();
+		  	  RX_Mode(); // Switch to RX mode
 		  }
 
-	  //HAL_Delay(1);
-	  //HAL_Delay(100);
-	  if (timer_ms>1000){NRF24L01_Send(); RX_Mode(); timer_ms=0;}
+	  if (timer_ms>1000){
+		  if (SPI_Read_Reg(CD) != 0) {continue;}	// If RF line is busy - no send
+		  NRF24L01_Send();
+		  RX_Mode();		// Switch to RX mode
+		  timer_ms=0;
+	  }
 
 
 
