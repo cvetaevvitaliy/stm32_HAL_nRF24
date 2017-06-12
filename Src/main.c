@@ -212,13 +212,18 @@ void NRF24L01_Receive(void)
 
 	if(status & 0x40)
 	{
-		SPI_Read_Buf(RD_RX_PLOAD,RX_BUF,TX_PLOAD_WIDTH);// read receive payload from RX_FIFO buffer
-
-		Printf("RX --");
-		Printf("data zerro is: 0x%x\r\n",RX_BUF[0]);
-		//int t=0; for (t=0; t<32; t++)printf("0x%x,",RX_BUF[t]); printf("\r\n");
-
 		SPI_RW_Reg(WRITE_REG_NRF24L01 + STATUS, 0x40);
+		
+		unsigned char fifo_status = 0;
+		do{
+			SPI_Read_Buf(RD_RX_PLOAD,RX_BUF,TX_PLOAD_WIDTH);// read receive payload from RX_FIFO buffer
+
+			Printf("RX --");
+			Printf("data zerro is: 0x%x\r\n",RX_BUF[0]);
+			//int t=0; for (t=0; t<32; t++)printf("0x%x,",RX_BUF[t]); printf("\r\n");
+
+			fifo_status=SPI_Read_Reg(FIFO_STATUS);
+		}while(fifo_status&0x1 != 0x1);	//Read all data! (nRF24L01 Can store up to 2 payload data!)
 	}
 	if(status&TX_DS)
 	{
@@ -238,31 +243,12 @@ void NRF24L01_Receive(void)
 void NRF24L01_Send(void)
 {
     unsigned char status=0x00;
-
+	// simple payload to send:
 	unsigned char bbuuff[32] = {0x33,0x12,0x31,0x54,0x25,0x16,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32};
 
 	TX_Mode(bbuuff);
 
 	while(IRQ == GPIO_PIN_SET);
-
-	CE(0);
-	HAL_Delay(2);//delayMicroseconds(10);//delay1us(10);
-
-	status=SPI_Read_Reg(STATUS);	 
-	if(status&TX_DS)	/*tx_ds == 0x20*/
-	{
-		Printf("data sended f\r\n");
-		SPI_RW_Reg(WRITE_REG_NRF24L01 + STATUS, 0x20);     
-
-	}
-	if(status&MAX_RT)
-	{
-		Printf("NO SEND.. f\n\r");
-		SPI_RW_Reg(WRITE_REG_NRF24L01 + STATUS, 0x10);  
-	}
-
-	CE(1);
-
 }
 
 
