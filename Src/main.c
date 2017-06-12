@@ -255,7 +255,7 @@ void NRF24L01_Send(void)
 		SPI_RW_Reg(WRITE_REG_NRF24L01 + STATUS, 0x20);     
 
 	}
-	else if(status&MAX_RT)
+	if(status&MAX_RT)
 	{
 		Printf("NO SEND.. f\n\r");
 		SPI_RW_Reg(WRITE_REG_NRF24L01 + STATUS, 0x10);  
