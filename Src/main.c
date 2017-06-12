@@ -224,7 +224,7 @@ void NRF24L01_Receive(void)
 			//int t=0; for (t=0; t<32; t++)printf("0x%x,",RX_BUF[t]); printf("\r\n");
 
 			fifo_status=SPI_Read_Reg(FIFO_STATUS);
-		}while(fifo_status&0x1 != 0x1);	//Read all data! (nRF24L01 Can store up to 2 payload data!)
+		}while((fifo_status&0x1) != 0x1);	//Read all data! (nRF24L01 Can store up to 2 payload data!)
 	}
 	if(status&TX_DS)
 	{
