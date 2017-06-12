@@ -2,6 +2,7 @@
   ******************************************************************************
   * File Name          : main.c
   * Description        : Main program body
+  * Creater            : Baranov Mikhail boring@list.ru
   ******************************************************************************
   *
   * COPYRIGHT(c) 2017 STMicroelectronics
